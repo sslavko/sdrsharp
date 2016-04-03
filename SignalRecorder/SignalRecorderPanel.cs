@@ -19,7 +19,6 @@ namespace SDRSharp.SignalRecorder
             chkPowerMonitor.Checked = Utils.GetBooleanSetting("SignalRecordingPowerMonitorEnabled");
             outputFolder.Text = Utils.GetStringSetting("SignalRecordingOutputFolder", "");
             numSquelch.Value = (decimal)Utils.GetDoubleSetting("SignalRecordingSquelchValue", -10);
-            numStretch.Value = Utils.GetIntSetting("SignalRecordingTimeStretch", 1);
             trkOffset.Value = Utils.GetIntSetting("SignalRecordingOffset", 0);
             trkRange.Value = Utils.GetIntSetting("SignalRecordingRange", 80);
 
@@ -52,7 +51,7 @@ namespace SDRSharp.SignalRecorder
 
         public int TimeStretch
         {
-            get { return (int) numStretch.Value; }
+            get { return 1; }
         }
 
         public void SetStatusText(string status)
@@ -122,11 +121,6 @@ namespace SDRSharp.SignalRecorder
         private void outputFolder_TextChanged(object sender, EventArgs e)
         {
             OutputFolder = outputFolder.Text;
-        }
-
-        private void numStretch_ValueChanged(object sender, EventArgs e)
-        {
-            Utils.SaveSetting("SignalRecordingTimeStretch", numStretch.Value);
         }
     }
 }

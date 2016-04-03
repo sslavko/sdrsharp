@@ -20,6 +20,7 @@ namespace SDRSharp.SignalRecorder
         private int _bufferPos;
         private Complex[] _workingBuffer;
         private float[] _window;
+        private int _powerTriggerCount;
 
         public string DisplayName
         {
@@ -90,12 +91,12 @@ namespace SDRSharp.SignalRecorder
             if (!Directory.Exists(_controlPanel.OutputFolder))
                 Directory.CreateDirectory(_controlPanel.OutputFolder);
 
-            var outFolder = Path.Combine(_controlPanel.OutputFolder, DateTime.Now.ToString("dd.MMMMM"));
+            var time = DateTime.Now;
+            var outFolder = Path.Combine(_controlPanel.OutputFolder, time.ToString("dd.MMMMM"));
 
             if (!Directory.Exists(outFolder))
                 Directory.CreateDirectory(outFolder);
 
-            var time = DateTime.Now;
             _writer =
                 new BinaryWriter(
                     File.OpenWrite(Path.Combine(outFolder, time.ToString("ddMMyyyy_HHmmss") + ".dat")));
@@ -167,7 +168,7 @@ namespace SDRSharp.SignalRecorder
             var fftSize = NextPowerOfTwo(length);
 
             if (_window == null || _window.Length != fftSize)
-                _window = FilterBuilder.MakeWindow(WindowType.BlackmanHarris4, fftSize);
+                _window = FilterBuilder.MakeWindow(WindowType.Hamming, fftSize);
 
             if (_workingBuffer == null || _workingBuffer.Length != fftSize)
             {
@@ -227,17 +228,20 @@ namespace SDRSharp.SignalRecorder
             for (var n = startIndex; n < endIndex; n++)
                 totalPower += (float)(10.0 * Math.Log10(1e-60 + (_workingBuffer[n].Real * _workingBuffer[n].Real + _workingBuffer[n].Imag * _workingBuffer[n].Imag)));
 
-            var dataPoint = totalPower/avgInBins;
+            var fftGain = (float)(10.0 * Math.Log10(fftSize / 2.0));
+            var compensation = 24.0f - fftGain - 40.0f;
 
-            SquelchOpen = dataPoint > _controlPanel.SquelchValue;
+            var dataPointValue = totalPower/avgInBins + compensation;
 
-            if (dataPoint >= 0)
-            {
-                int x = 0;
-            }
+            if (dataPointValue >= _controlPanel.SquelchValue)
+                _powerTriggerCount++;
+            else
+                _powerTriggerCount = 0;
+
+            SquelchOpen = _powerTriggerCount > 1;
 
             if(_powerSpectrumPanel.Visible)
-                _powerSpectrumPanel.Draw(dataPoint);
+                _powerSpectrumPanel.Draw(dataPointValue);
         }
 
         public void Process(Complex* buffer, int length)
@@ -333,6 +337,12 @@ namespace SDRSharp.SignalRecorder
                 for (var n = 0; n < _buffer.Length; n++)
                     _buffer[n] = 0;
             }
+        }
+
+
+        public UserControl Gui
+        {
+            get { return _controlPanel; }
         }
     }
 }

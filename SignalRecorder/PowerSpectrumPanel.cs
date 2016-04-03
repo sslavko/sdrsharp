@@ -30,14 +30,15 @@ namespace SDRSharp.SignalRecorder
             _buffer = new Queue<float>();
             _timer = new Timer(state => Invalidate(), null, 100, _timerPeriod);
             _gridPen = new Pen(Color.Gray, 1.0f) {DashStyle = DashStyle.Dash};
-            _gridFont = new Font(DefaultFont.FontFamily, DefaultFont.Size - 1);
+            _gridFont = new Font("Arial", 8f);
 
             PowerSpectrum = this;
         }
 
         public void Draw(float dataPoint)
         {
-            _buffer.Enqueue(dataPoint);
+            lock(_buffer)
+                _buffer.Enqueue(dataPoint);
         }
 
         protected override void OnPaintBackground(PaintEventArgs e)
@@ -83,19 +84,19 @@ namespace SDRSharp.SignalRecorder
                     {
                         if (((_timeCounter++)%PointsPerSecond) == 0)
                         {
-                            g.DrawLine(_timeCounter == 1 ? Pens.DodgerBlue : _gridPen, _bufferImage.Width - n, 20,
-                                _bufferImage.Width - n, _bufferImage.Height);
-                            g.DrawString(((_timeCounter - 1)/PointsPerSecond).ToString(CultureInfo.InvariantCulture),
-                                DefaultFont, Brushes.White, _bufferImage.Width - n - DefaultFont.Height, 0,
+                            g.DrawLine(_timeCounter == 1 ? Pens.DodgerBlue : _gridPen, _bufferImage.Width - n, 20, _bufferImage.Width - n, _bufferImage.Height);
+                            g.DrawString(((_timeCounter - 1)/PointsPerSecond).ToString(CultureInfo.InvariantCulture), _gridFont, Brushes.Silver, _bufferImage.Width - n - DefaultFont.Height, 0,
                                 new StringFormat(StringFormatFlags.DirectionVertical));
                         }
 
-                        var p = _buffer.Dequeue();
+                        float p;
+                        lock(_buffer)
+                            p = _buffer.Dequeue();
 
                         var y = (int) ((-p - _controlPanel.Offset)*scale + 10.5);
 
-                        if (y < 0)
-                            y = 0;
+                        if (y < 10)
+                            y = 10;
 
                         if (y >= Height)
                             y = Height - 1;
@@ -117,7 +118,7 @@ namespace SDRSharp.SignalRecorder
                 {
                     var y = (int) (_bufferImage.Height - 10 - j*grid + 0.5);
                     g.DrawLine(_gridPen, 51, y, _bufferImage.Width, y);
-                    g.DrawString(string.Format("{0}", -Math.Round(_controlPanel.Range - j*(_controlPanel.Range - _controlPanel.Offset)/15.0f, 1)), _gridFont, Brushes.White, 10, y - _gridFont.Height/2);
+                    g.DrawString(string.Format("{0}", -Math.Round(_controlPanel.Range - j*(_controlPanel.Range - _controlPanel.Offset)/15.0f, 1)), _gridFont, Brushes.Silver, 10, y - _gridFont.Height/2);
                 }
 
                 var ySquelch = (int) ((-_controlPanel.SquelchValue - _controlPanel.Offset)*scale + 10.5);

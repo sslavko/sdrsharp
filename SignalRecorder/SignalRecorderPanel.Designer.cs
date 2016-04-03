@@ -40,12 +40,9 @@
             this.trkOffset = new System.Windows.Forms.TrackBar();
             this.label4 = new System.Windows.Forms.Label();
             this.numSquelch = new System.Windows.Forms.NumericUpDown();
-            this.numStretch = new System.Windows.Forms.NumericUpDown();
-            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trkRange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trkOffset)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numSquelch)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numStretch)).BeginInit();
             this.SuspendLayout();
             // 
             // chkEnableRecording
@@ -149,7 +146,7 @@
             this.trkOffset.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.trkOffset.Location = new System.Drawing.Point(4, 238);
-            this.trkOffset.Maximum = 50;
+            this.trkOffset.Maximum = 80;
             this.trkOffset.Name = "trkOffset";
             this.trkOffset.Size = new System.Drawing.Size(311, 45);
             this.trkOffset.TabIndex = 5;
@@ -189,46 +186,11 @@
             this.numSquelch.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numSquelch.ValueChanged += new System.EventHandler(this.numSquelch_ValueChanged);
             // 
-            // numStretch
-            // 
-            this.numStretch.Location = new System.Drawing.Point(82, 282);
-            this.numStretch.Maximum = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-            this.numStretch.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numStretch.Name = "numStretch";
-            this.numStretch.Size = new System.Drawing.Size(53, 20);
-            this.numStretch.TabIndex = 8;
-            this.numStretch.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.numStretch.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numStretch.ValueChanged += new System.EventHandler(this.numStretch_ValueChanged);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 286);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(65, 13);
-            this.label5.TabIndex = 6;
-            this.label5.Text = "Time stretch";
-            // 
             // SignalRecorderPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.numStretch);
             this.Controls.Add(this.numSquelch);
-            this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -245,7 +207,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.trkRange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trkOffset)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numSquelch)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numStretch)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -265,7 +226,5 @@
         private System.Windows.Forms.TrackBar trkOffset;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown numSquelch;
-        private System.Windows.Forms.NumericUpDown numStretch;
-        private System.Windows.Forms.Label label5;
     }
 }
