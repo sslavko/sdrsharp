@@ -32,7 +32,7 @@ namespace SDRSharp.SignalRecorder
                     SampleRate = reader.ReadDouble();
                     CenterFrequency = reader.ReadInt64();
                     Frequency = reader.ReadInt64();
-                    Duration = TimeSpan.FromMilliseconds(((strm.Length - 32.0f) / 8) / SampleRate * 1000);
+                    Duration = TimeSpan.FromMilliseconds(((strm.Length - 32.0f) / SignalRecorderPlugin.BytesPerSample) / SampleRate * 1000);
 
                     if (SignalRecorderPlugin.MainControl != null)
                     {

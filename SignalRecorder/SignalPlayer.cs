@@ -11,7 +11,7 @@ using SDRSharp.Radio;
 
 namespace SDRSharp.SignalRecorder
 {
-    public unsafe class SignalPlayer : IFrontendController
+    public unsafe class SignalPlayer : IFrontendController, IFloatingConfigDialogProvider, ITunableSource, IIQStreamController
     {
         private bool _requestStop;
         private AutoResetEvent _isRunning;
@@ -22,48 +22,46 @@ namespace SDRSharp.SignalRecorder
             _gui = new SignalPlayerUI();
         }
 
+        // IFrontendController
+        public void Open()
+        {
+        }
+
         public void Close()
         {
             Stop();
         }
 
-        public long Frequency
-        {
-            get { return _gui.Frequency; }
-            set {  }
-        }
-
+        // IFloatingConfigDialogProvider
         public void HideSettingGUI()
         {
             _gui.Hide();
         }
-
-        public bool IsSoundCardBased
-        {
-            get { return false; }
-        }
-
-        public void Open()
-        {
-        }
-
-        public double Samplerate
-        {
-            get { return _gui.SampleRate; }
-        }
-
+        
         public void ShowSettingGUI(IWin32Window parent)
         {
             _gui.Show();
         }
 
-        public string SoundCardHint
+        // ITunableSource
+        public long Frequency
         {
-            get { return string.Empty; }
+            get { return _gui.Frequency; }
+            set { }
         }
+
+        // IIQStreamController
+        public double Samplerate
+        {
+            get { return _gui.SampleRate; }
+        }
+
         public void Start(SamplesAvailableDelegate callback)
         {
             if (string.IsNullOrEmpty(_gui.FileName))
+                return;
+
+            if (!File.Exists(_gui.FileName))
                 return;
 
             _requestStop = false;
@@ -85,16 +83,27 @@ namespace SDRSharp.SignalRecorder
                         while (true)
                         {
                             var start = DateTime.Now;
-                            if (strm.Position > strm.Length - 8*bufferSize)
+                            if (strm.Position > strm.Length - SignalRecorderPlugin.BytesPerSample *bufferSize)
                             {
-                                bufferSize = (int) (strm.Length - strm.Position)/8;
+                                bufferSize = (int)(strm.Length - strm.Position) / SignalRecorderPlugin.BytesPerSample;
                                 rewind = true;
                             }
 
                             for (var n = 0; n < bufferSize; n++)
                             {
-                                buffer[n].Real = reader.ReadSingle();
-                                buffer[n].Imag = reader.ReadSingle();
+                                switch (SignalRecorderPlugin.BytesPerSample)
+                                {
+                                    case 2:
+                                        byte r = reader.ReadByte();
+                                        byte i = reader.ReadByte();
+                                        buffer[n].Real = (r * 2 - 1) * SignalRecorderPlugin.MaxDataRange;
+                                        buffer[n].Imag = (i * 2 - 1) * SignalRecorderPlugin.MaxDataRange;
+                                        break;
+                                    case 8:
+                                        buffer[n].Real = reader.ReadSingle();
+                                        buffer[n].Imag = reader.ReadSingle();
+                                        break;
+                                }
                             }
 
                             if (_requestStop)
@@ -114,17 +123,6 @@ namespace SDRSharp.SignalRecorder
                                 bufferSize = maxBufferSize;
                                 strm.Seek(headerSize, SeekOrigin.Begin); // Skip header
 
-                                // Insert one second of silence so that we get a line in waterfall graph
-                                /*for (var n = 0; n < maxBufferSize; n++)
-                                {
-                                    buffer[n].Real = 0.0001f; buffer[n].Imag = 0.0f;
-                                }
-                                for (var i = 0; i < Samplerate/10/maxBufferSize; i++)
-                                {
-                                    callback(this, ptr, bufferSize);
-                                    Thread.Sleep((int)(bufferSize / _gui.SampleRate * 1000)); 
-                                }*/
-
                                 if(PowerSpectrumPanel.PowerSpectrum != null)
                                     PowerSpectrumPanel.PowerSpectrum.ResetTime();
                             }
@@ -132,7 +130,7 @@ namespace SDRSharp.SignalRecorder
                         _isRunning.Set();
                     }
                 }
-            });//.Start();
+            });
         }
 
         public void Stop()

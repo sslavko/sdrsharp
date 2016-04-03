@@ -1,0 +1,1 @@
+<add key="Spectrum Analyzer" value="SDRSharp.SpectrumAnalyzer.SpectrumAnalyzerPlugin,SDRSharp.SpectrumAnalyzer" />

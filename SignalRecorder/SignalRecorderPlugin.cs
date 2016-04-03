@@ -22,9 +22,17 @@ namespace SDRSharp.SignalRecorder
         private float[] _window;
         private int _powerTriggerCount;
 
+        public const int MaxDataRange = 64;//8096;
+        public const int BytesPerSample = 8;//2;
+
         public string DisplayName
         {
             get { return "Signal Recorder"; }
+        }
+
+        public UserControl Gui
+        {
+            get { return _controlPanel; }
         }
 
         public bool HasGui
@@ -226,7 +234,10 @@ namespace SDRSharp.SignalRecorder
 
             var totalPower = 0.0f;
             for (var n = startIndex; n < endIndex; n++)
+            {
+                //CheckMinMax(_workingBuffer[n]);
                 totalPower += (float)(10.0 * Math.Log10(1e-60 + (_workingBuffer[n].Real * _workingBuffer[n].Real + _workingBuffer[n].Imag * _workingBuffer[n].Imag)));
+            }
 
             var fftGain = (float)(10.0 * Math.Log10(fftSize / 2.0));
             var compensation = 24.0f - fftGain - 40.0f;
@@ -243,6 +254,19 @@ namespace SDRSharp.SignalRecorder
             if(_powerSpectrumPanel.Visible)
                 _powerSpectrumPanel.Draw(dataPointValue);
         }
+
+        /*float minData = 1000, maxData = -1000;
+        private void CheckMinMax(Complex c)
+        {
+            if (minData > c.Real)
+                minData = c.Real;
+            if (minData > c.Imag)
+                minData = c.Imag;
+            if (maxData < c.Real)
+                maxData = c.Real;
+            if (maxData < c.Imag)
+                maxData = c.Imag;
+        }*/
 
         public void Process(Complex* buffer, int length)
         {
@@ -265,13 +289,13 @@ namespace SDRSharp.SignalRecorder
                         {
                             for (var n = _bufferPos; n < _buffer.Length; n++)
                             {
-                                _writer.Write(_buffer[n].Real);
-                                _writer.Write(_buffer[n].Imag);
+                                _writer.Write(Quantize(_buffer[n].Real));
+                                _writer.Write(Quantize(_buffer[n].Imag));
                             }
                             for (var n = 0; n < _bufferPos; n++)
                             {
-                                _writer.Write(_buffer[n].Real);
-                                _writer.Write(_buffer[n].Imag);
+                                _writer.Write(Quantize(_buffer[n].Real));
+                                _writer.Write(Quantize(_buffer[n].Imag));
                             }
                             _bufferPos = 0;
                         }
@@ -301,8 +325,8 @@ namespace SDRSharp.SignalRecorder
                 {
                     for (var n = 0; n < length; n++)
                     {
-                        _writer.Write(buffer[n].Real);
-                        _writer.Write(buffer[n].Imag);
+                        _writer.Write(Quantize(buffer[n].Real));
+                        _writer.Write(Quantize(buffer[n].Imag));
                     }
 
                     if (_onhold > (int)_sampleRate * 2)
@@ -339,10 +363,21 @@ namespace SDRSharp.SignalRecorder
             }
         }
 
-
-        public UserControl Gui
+        float Quantize(float x)
         {
-            get { return _controlPanel; }
+            return x;
         }
+
+        /*byte Quantize(float x)
+        {
+            x = (x + MaxDataRange) / (2 * MaxDataRange);
+            x = (int)Math.Floor(256 * x);
+            if (x < 0) 
+                return 0;
+            else if (x > 255) 
+                return 255;
+            
+            return (byte)x;
+        }*/
     }
 }
