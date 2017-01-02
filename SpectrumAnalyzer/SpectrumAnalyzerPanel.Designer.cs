@@ -109,8 +109,13 @@
             // numStep
             // 
             this.numStep.Location = new System.Drawing.Point(49, 54);
+            this.numStep.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
             this.numStep.Minimum = new decimal(new int[] {
-            1,
+            10,
             0,
             0,
             0});
@@ -118,7 +123,7 @@
             this.numStep.Size = new System.Drawing.Size(120, 20);
             this.numStep.TabIndex = 3;
             this.numStep.Value = new decimal(new int[] {
-            1,
+            1000,
             0,
             0,
             0});
@@ -146,9 +151,9 @@
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(175, 56);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(29, 13);
+            this.label6.Size = new System.Drawing.Size(27, 13);
             this.label6.TabIndex = 0;
-            this.label6.Text = "MHz";
+            this.label6.Text = "KHz";
             // 
             // chkShowSpectrum
             // 

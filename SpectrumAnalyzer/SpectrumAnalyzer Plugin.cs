@@ -18,6 +18,8 @@ namespace SDRSharp.SpectrumAnalyzer
         Complex[] _workingBuffer;
         float[] _window;
         float[] _spectrum;
+        System.Threading.Timer _timer;
+        bool _autoExport = false;
 
         public void Close()
         {
@@ -57,18 +59,32 @@ namespace SDRSharp.SpectrumAnalyzer
 
             _control.RegisterFrontControl(_drawing, PluginPosition.Bottom);
             _control.RegisterStreamHook(this, ProcessorType.RawIQ);
+
+            _timer = new System.Threading.Timer(state => OnScanning(), null, 0, 600000);
+            _autoExport = true;
         }
 
         void Export()
+        {
+            Export(null);
+        }
+
+        void Export(string fileName)
         {
             var data = _drawing.GetDataPoints();
             if(data.Length == 0)
                 return;
 
-            var dlg = new System.Windows.Forms.SaveFileDialog() { DefaultExt = "csv", Filter = "CSV Files (*.csv)|*.csv"};
-            if(dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (fileName == null)
             {
-                using(var writer = System.IO.File.CreateText(dlg.FileName))
+                var dlg = new System.Windows.Forms.SaveFileDialog() { DefaultExt = "csv", Filter = "CSV Files (*.csv)|*.csv" };
+                if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    fileName = dlg.FileName;
+            }
+
+            if(fileName != null)
+            { 
+                using(var writer = System.IO.File.CreateText(fileName))
                 {
                     for (var n = 0; n < data.Length - 1; n++)
                     {
@@ -135,7 +151,7 @@ namespace SDRSharp.SpectrumAnalyzer
             _drawing.AddDataPoint(_control.Frequency, avg);
 
             if(_control.IsPlaying)
-                _control.SetFrequency(_control.Frequency + _gui.Step * 1000000, false);
+                _control.SetFrequency(_control.Frequency + _gui.Step * 1000, false);
 
             if (_control.Frequency > _gui.EndFreq * 1000000)
                 StopScanning();
@@ -163,6 +179,12 @@ namespace SDRSharp.SpectrumAnalyzer
             _scanning = false;
             Enabled = false;
             _gui.Scanning(_scanning);
+
+            if(_autoExport)
+            {
+                string fileName = DateTime.Now.ToString("ddMMyyyy_HHmmss") + ".csv";
+                Export(System.IO.Path.Combine(@"c:\Data", fileName));
+            }
         }
 
         public double SampleRate

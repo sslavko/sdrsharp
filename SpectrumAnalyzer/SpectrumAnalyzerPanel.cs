@@ -28,7 +28,7 @@ namespace SDRSharp.SpectrumAnalyzer
 
             numStart.Value = Utils.GetLongSetting("SpectrumAnalyzer.StartFreq", 1);
             numEnd.Value = Utils.GetLongSetting("SpectrumAnalyzer.EndFreq", 10);
-            numStep.Value = Utils.GetLongSetting("SpectrumAnalyzer.Step", 1);
+            numStep.Value = Utils.GetLongSetting("SpectrumAnalyzer.Step", 1000);
             chkShowSpectrum.Checked = Utils.GetBooleanSetting("SpectrumAnalyzer.ShowSpectrum");
         }
 
