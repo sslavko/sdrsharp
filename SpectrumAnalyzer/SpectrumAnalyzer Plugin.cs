@@ -19,7 +19,6 @@ namespace SDRSharp.SpectrumAnalyzer
         float[] _window;
         float[] _spectrum;
         System.Threading.Timer _timer;
-        bool _autoExport = false;
 
         public void Close()
         {
@@ -47,6 +46,8 @@ namespace SDRSharp.SpectrumAnalyzer
             if (_gui.ShowSpectrum == false)
                 _drawing.Hide();
 
+            _timer = new System.Threading.Timer(state => OnScanning(), null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+
             _gui.OnShowSpectrum += (show) => 
             {
                 if (show)
@@ -56,12 +57,12 @@ namespace SDRSharp.SpectrumAnalyzer
             };
 
             _gui.OnExport += Export;
+            _gui.OnAutoScan += AutoScan;
 
             _control.RegisterFrontControl(_drawing, PluginPosition.Bottom);
             _control.RegisterStreamHook(this, ProcessorType.RawIQ);
 
-            _timer = new System.Threading.Timer(state => OnScanning(), null, 0, 600000);
-            _autoExport = true;
+            AutoScan();
         }
 
         void Export()
@@ -83,23 +84,38 @@ namespace SDRSharp.SpectrumAnalyzer
             }
 
             if(fileName != null)
-            { 
-                using(var writer = System.IO.File.CreateText(fileName))
+            {
+                try
                 {
-                    for (var n = 0; n < data.Length - 1; n++)
+                    using (var writer = System.IO.File.CreateText(fileName))
                     {
-                        writer.Write(data[n].Key);
-                        writer.Write(",");
+                        for (var n = 0; n < data.Length - 1; n++)
+                        {
+                            writer.Write(data[n].Key);
+                            writer.Write(",");
+                        }
+                        writer.WriteLine(data[data.Length - 1].Key);
+                        for (var n = 0; n < data.Length - 1; n++)
+                        {
+                            writer.Write(data[n].Value);
+                            writer.Write(",");
+                        }
+                        writer.WriteLine(data[data.Length - 1].Value);
                     }
-                    writer.WriteLine(data[data.Length - 1].Key);
-                    for (var n = 0; n < data.Length - 1; n++)
-                    {
-                        writer.Write(data[n].Value);
-                        writer.Write(",");
-                    }
-                    writer.WriteLine(data[data.Length - 1].Value);
+                }
+                catch(Exception ex)
+                {
+
                 }
             }
+        }
+
+        void AutoScan()
+        {
+            if (_gui.AutoScan)
+                _timer.Change(0, _gui.AutoScanPeriod * 60000);
+            else
+                _timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         void OnScanning()
@@ -150,11 +166,15 @@ namespace SDRSharp.SpectrumAnalyzer
 
             _drawing.AddDataPoint(_control.Frequency, avg);
 
-            if(_control.IsPlaying)
-                _control.SetFrequency(_control.Frequency + _gui.Step * 1000, false);
-
-            if (_control.Frequency > _gui.EndFreq * 1000000)
+            if (_control.Frequency > _gui.EndFreq * 1000000 - _gui.Step * 1000)
+            {
                 StopScanning();
+            }
+            else
+            {
+                if (_control.IsPlaying)
+                    _control.SetFrequency(_control.Frequency + _gui.Step * 1000, false);
+            }
         }
 
         private void StartScanning()
@@ -180,10 +200,10 @@ namespace SDRSharp.SpectrumAnalyzer
             Enabled = false;
             _gui.Scanning(_scanning);
 
-            if(_autoExport)
+            if(_gui.AutoScan && !string.IsNullOrWhiteSpace(_gui.AutoExportTo))
             {
                 string fileName = DateTime.Now.ToString("ddMMyyyy_HHmmss") + ".csv";
-                Export(System.IO.Path.Combine(@"c:\Data", fileName));
+                Export(System.IO.Path.Combine(_gui.AutoExportTo, fileName));
             }
         }
 

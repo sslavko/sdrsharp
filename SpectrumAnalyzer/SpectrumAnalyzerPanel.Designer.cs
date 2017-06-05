@@ -40,9 +40,17 @@
             this.label6 = new System.Windows.Forms.Label();
             this.chkShowSpectrum = new System.Windows.Forms.CheckBox();
             this.btnExport = new System.Windows.Forms.Button();
+            this.chkAutoScan = new System.Windows.Forms.CheckBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.numPeriod = new System.Windows.Forms.NumericUpDown();
+            this.label8 = new System.Windows.Forms.Label();
+            this.txtExportTo = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.btnBrowse = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numStart)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numEnd)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numStep)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPeriod)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -65,7 +73,7 @@
             // 
             // btnScan
             // 
-            this.btnScan.Location = new System.Drawing.Point(6, 123);
+            this.btnScan.Location = new System.Drawing.Point(6, 103);
             this.btnScan.Name = "btnScan";
             this.btnScan.Size = new System.Drawing.Size(75, 23);
             this.btnScan.TabIndex = 1;
@@ -158,7 +166,7 @@
             // chkShowSpectrum
             // 
             this.chkShowSpectrum.AutoSize = true;
-            this.chkShowSpectrum.Location = new System.Drawing.Point(49, 90);
+            this.chkShowSpectrum.Location = new System.Drawing.Point(49, 80);
             this.chkShowSpectrum.Name = "chkShowSpectrum";
             this.chkShowSpectrum.Size = new System.Drawing.Size(99, 17);
             this.chkShowSpectrum.TabIndex = 4;
@@ -168,7 +176,7 @@
             // 
             // btnExport
             // 
-            this.btnExport.Location = new System.Drawing.Point(87, 123);
+            this.btnExport.Location = new System.Drawing.Point(94, 103);
             this.btnExport.Name = "btnExport";
             this.btnExport.Size = new System.Drawing.Size(75, 23);
             this.btnExport.TabIndex = 1;
@@ -176,10 +184,95 @@
             this.btnExport.UseVisualStyleBackColor = true;
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
             // 
+            // chkAutoScan
+            // 
+            this.chkAutoScan.AutoSize = true;
+            this.chkAutoScan.Location = new System.Drawing.Point(6, 141);
+            this.chkAutoScan.Name = "chkAutoScan";
+            this.chkAutoScan.Size = new System.Drawing.Size(74, 17);
+            this.chkAutoScan.TabIndex = 5;
+            this.chkAutoScan.Text = "Auto-scan";
+            this.chkAutoScan.UseVisualStyleBackColor = true;
+            this.chkAutoScan.CheckedChanged += new System.EventHandler(this.OnAutoScanChange);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(87, 141);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(37, 13);
+            this.label7.TabIndex = 6;
+            this.label7.Text = "Period";
+            // 
+            // numPeriod
+            // 
+            this.numPeriod.Enabled = false;
+            this.numPeriod.Location = new System.Drawing.Point(130, 138);
+            this.numPeriod.Maximum = new decimal(new int[] {
+            30,
+            0,
+            0,
+            0});
+            this.numPeriod.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numPeriod.Name = "numPeriod";
+            this.numPeriod.Size = new System.Drawing.Size(39, 20);
+            this.numPeriod.TabIndex = 8;
+            this.numPeriod.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(175, 141);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(23, 13);
+            this.label8.TabIndex = 9;
+            this.label8.Text = "min";
+            // 
+            // txtExportTo
+            // 
+            this.txtExportTo.Location = new System.Drawing.Point(49, 162);
+            this.txtExportTo.Name = "txtExportTo";
+            this.txtExportTo.Size = new System.Drawing.Size(120, 20);
+            this.txtExportTo.TabIndex = 10;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(3, 165);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(39, 13);
+            this.label9.TabIndex = 11;
+            this.label9.Text = "Output";
+            // 
+            // btnBrowse
+            // 
+            this.btnBrowse.Location = new System.Drawing.Point(175, 160);
+            this.btnBrowse.Name = "btnBrowse";
+            this.btnBrowse.Size = new System.Drawing.Size(50, 23);
+            this.btnBrowse.TabIndex = 12;
+            this.btnBrowse.Text = "Browse";
+            this.btnBrowse.UseVisualStyleBackColor = true;
+            this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
+            // 
             // SpectrumAnalyzerPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btnBrowse);
+            this.Controls.Add(this.txtExportTo);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.numPeriod);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.chkAutoScan);
             this.Controls.Add(this.chkShowSpectrum);
             this.Controls.Add(this.numStep);
             this.Controls.Add(this.numEnd);
@@ -193,10 +286,11 @@
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label1);
             this.Name = "SpectrumAnalyzerPanel";
-            this.Size = new System.Drawing.Size(323, 177);
+            this.Size = new System.Drawing.Size(241, 224);
             ((System.ComponentModel.ISupportInitialize)(this.numStart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numEnd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numStep)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numPeriod)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -216,5 +310,12 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox chkShowSpectrum;
         private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.CheckBox chkAutoScan;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.NumericUpDown numPeriod;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox txtExportTo;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Button btnBrowse;
     }
 }
