@@ -19,6 +19,7 @@ namespace SDRSharp.SpectrumAnalyzer
         float[] _window;
         float[] _spectrum;
         System.Threading.Timer _timer;
+        long _checkedFrequency;
 
         public void Close()
         {
@@ -133,13 +134,16 @@ namespace SDRSharp.SpectrumAnalyzer
             if (!_scanning)
                 return;
 
-            if(_workingBuffer == null || _workingBuffer.Length != length)
+            if (_control.Frequency == _checkedFrequency)
+                return;
+
+            if (_workingBuffer == null || _workingBuffer.Length < length)
                 _workingBuffer = new Complex[length];
 
             for (var n = 0; n < length; n++)
                 _workingBuffer[n] = buffer[n];
 
-            if (_window == null || _window.Length != length)
+            if (_window == null || _window.Length < length)
                 _window = FilterBuilder.MakeWindow(WindowType.Hamming, length);
 
             fixed (Complex* workingPtr = &_workingBuffer[0])
@@ -149,17 +153,15 @@ namespace SDRSharp.SpectrumAnalyzer
 
                 Fourier.ForwardTransform(workingPtr, length);
 
-                if (_spectrum == null || _spectrum.Length != length)
+                if (_spectrum == null || _spectrum.Length < length)
                     _spectrum = new float[length];
 
-                fixed (float* spectrumPtr = &_spectrum[0])
+                fixed ( float* spectrumPtr = &_spectrum[0])
                     Fourier.SpectrumPower(workingPtr, spectrumPtr, length);
             }
 
             float avg = 0.0f;
-            var startIndex = 0;// length / 2 - 100;
-            var endIndex = length;// / 2 + 100;
-            for (var n = startIndex; n < endIndex; n++)
+            for (var n = 0; n < length; n++)
                 avg += _spectrum[n];
 
             avg /= length;
@@ -173,7 +175,10 @@ namespace SDRSharp.SpectrumAnalyzer
             else
             {
                 if (_control.IsPlaying)
+                {
+                    _checkedFrequency = _control.Frequency;
                     _control.SetFrequency(_control.Frequency + _gui.Step * 1000, false);
+                }
             }
         }
 
@@ -188,6 +193,7 @@ namespace SDRSharp.SpectrumAnalyzer
             {
                 _drawing.SetRanges(_gui.StartFreq, _gui.EndFreq, _gui.Step);
                 _control.SetFrequency(_gui.StartFreq * 1000000, false);
+                _checkedFrequency = 0;
                 Enabled = true;
             }
 

@@ -18,7 +18,7 @@ namespace SDRSharp.SpectrumAnalyzer
         private Timer _timer;
         private int _timerPeriod = 100;
         private Dictionary<long, float> _dataPoints;
-        private Object _lockBitmap = new Object();
+        private object _lockBitmap = new object();
         private long _minFreq;
         private long _maxFreq;
         private long _step;
@@ -47,9 +47,7 @@ namespace SDRSharp.SpectrumAnalyzer
             if (Visible)
                 _timer.Change(0, _timerPeriod);
             else
-            {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
-            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -157,7 +155,7 @@ namespace SDRSharp.SpectrumAnalyzer
                     g.DrawLine(Pens.White, 20, Height - 20, Width, Height - 20);
                     g.DrawLine(Pens.White, 20, 0, 20, Height - 20);
 
-                    var textSize = g.MeasureString(string.Format("{0,0:0,000}MHz", _maxFreq), _gridFont);
+                    var textSize = g.MeasureString(string.Format("{0,0:0,000}GHz", _maxFreq), _gridFont);
                     var numTexts = Width / (int)((textSize.Width + 20));
                     if (numTexts <= 0)
                         numTexts = 1;
