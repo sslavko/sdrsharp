@@ -1,0 +1,1 @@
+<add key="Phase Inspector" value="SDRSharp.PhaseInspector.PhaseInspectorPlugin,SDRSharp.PhaseInspector" />
