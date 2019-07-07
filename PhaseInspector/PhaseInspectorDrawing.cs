@@ -16,10 +16,12 @@ namespace SDRSharp.PhaseInspector
         private object _lockBitmap = new object();
         private const int _matrixSize = 512;
         private const int _anglesSize = 1024;
-        private int _scale = 256;
+        private float _scale = 1;
 
-        private byte[] _angles = new byte[_anglesSize];
-        private byte[,] _drawingMatrix = new byte[_matrixSize, _matrixSize];
+        private uint[] _angles = new uint[_anglesSize];
+        private uint[,] _drawingMatrix = new uint[_matrixSize, _matrixSize];
+        private uint _dataCount = 1;
+        private Queue<Complex> _rawData = new Queue<Complex>();
 
         public PhaseInspectorDrawing()
         {
@@ -28,12 +30,28 @@ namespace SDRSharp.PhaseInspector
             _timer = new Timer(state => Invalidate(), null, 100, _timerPeriod);
         }
 
-        public int ScaleFactor { set { _scale = 256 * value; } }
+        public float ScaleFactor
+        {
+            set
+            {
+                _scale = value * 1000;
+                Clear();
+            }
+        }
 
         public void Clear()
         {
             for (var n = 0; n < _anglesSize; n++)
                 _angles[n] = 0;
+
+            /*for (var y = 0; y < _matrixSize; y++)
+            {
+                for (var x = 0; x < _matrixSize; x++)
+                {
+                    _drawingMatrix[x, y] = 0;
+                }
+            }*/
+            _dataCount = 1;
         }
 
         /*
@@ -88,19 +106,21 @@ namespace SDRSharp.PhaseInspector
 
         public void AddDataLine(Complex* dataLine, int length)
         {
-            for (var y = 0; y < _matrixSize; y++)
+            //_dataCount++;
+
+            /*for (var y = 0; y < _matrixSize; y++)
             {
                 for (var x = 0; x < _matrixSize; x++)
                 {
-                    if (_drawingMatrix[x, y] > 0)
-                        _drawingMatrix[x, y]--;
+                    _drawingMatrix[x, y]++;
                 }
-            }
+            }*/
 
-            for(var n = 0; n < length; n++)
+            /*for(var n = 0; n < length; n++)
             {
                 var x = (int)(dataLine[n].Real * _scale + _matrixSize / 2.0f + 0.5f);
                 var y = (int)(dataLine[n].Imag * _scale + _matrixSize / 2.0f + 0.5f);
+
                 if (x < 0)
                     x = 0;
 
@@ -113,24 +133,42 @@ namespace SDRSharp.PhaseInspector
                 if (y > _matrixSize - 1)
                     y = _matrixSize - 1;
 
-                if(_drawingMatrix[x, y] < 255)
-                    _drawingMatrix[x, y]++;
-            }
+                _drawingMatrix[x, y]++;
+            }*/
 
             /*for (var n = 0; n < _angles.Length; n++)
             {
                 if (_angles[n] > 0)
                     _angles[n]--;
-            }
+            }*/
 
-            var bin = (_anglesSize - 1) / (Math.PI * 2);
+            /*var binWidth = (_anglesSize - 1) / (Math.PI * 2);
             for (var n = 0; n < length; n++)
             {
                 var angle = dataLine[n].Argument();
-                var index = (int)((angle + Math.PI) * bin);
-                if(_angles[index] < 255)
-                    _angles[index]++;
+                var index = (int)((angle + Math.PI) * binWidth);
+                _angles[index]++;
             }*/
+
+            lock (_lockBitmap)
+            {
+                var re = 0.0f;
+                var im = 0.0f;
+                for (var n = 0; n < length; n++)
+                {
+                    re += dataLine[n].Real;
+                    im += dataLine[n].Imag;
+                };
+                _rawData.Enqueue(new Complex(re / length, im / length));
+
+                for(int n = 0; n < length; n++)
+                {
+                    if(dataLine[n].Real == dataLine[0].Imag)
+                    {
+                        int x = 1;
+                    }
+                }
+            }
         }
 
         protected override void OnPaintBackground(PaintEventArgs e)
@@ -149,19 +187,20 @@ namespace SDRSharp.PhaseInspector
         }
 
         byte[] rgbValues = null;
+        Complex prevPoint;
         protected override void OnPaint(PaintEventArgs e)
         {
             //lock (_lockBitmap)
             {
-                if(_drawingImage == null)
+                /*if(_drawingImage == null)
                 {
                     _drawingImage = new Bitmap(_matrixSize, _matrixSize);
                     using (var g = Graphics.FromImage(_drawingImage))
                         g.FillRectangle(Brushes.Black, 0, 0, _drawingImage.Width, _drawingImage.Height);
                 }
 
-                /*var data = _drawingImage.LockBits(
-                    new Rectangle(0, 0, _matrixSize, _matrixSize), 
+                var data = _drawingImage.LockBits(
+                    new Rectangle(0, 0, _drawingImage.Width, _drawingImage.Height), 
                     System.Drawing.Imaging.ImageLockMode.ReadWrite, 
                     System.Drawing.Imaging.PixelFormat.Format24bppRgb);
 
@@ -174,14 +213,14 @@ namespace SDRSharp.PhaseInspector
                 {
                     for(var x = 0; x < _matrixSize; x++)
                     {
-                        rgbValues[x * 3 + y * data.Stride + 1] = _drawingMatrix[x, y];
+                        rgbValues[x * 3 + y * data.Stride + 1] = (byte)(255.0f * _drawingMatrix[x, y] / _dataCount);
                     }
                 }
                 System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, data.Scan0, bytesCount);
 
                 _drawingImage.UnlockBits(data);*/
 
-                using (var g = Graphics.FromImage(_drawingImage))
+                /*using (var g = Graphics.FromImage(_drawingImage))
                 {
                     g.FillRectangle(Brushes.Black, 0, 0, _drawingImage.Width, _drawingImage.Height);
                     for (var y = 0; y < _matrixSize; y++)
@@ -195,20 +234,86 @@ namespace SDRSharp.PhaseInspector
                             g.DrawLine(pen, _drawingImage.Width/2, _drawingImage.Height/2, x, y);
                         }
                     }
+                }*/
+
+                /*if (_drawingImage == null)
+                {
+                    _drawingImage = new Bitmap(_anglesSize, 256);
                 }
 
-                /*using (var g = Graphics.FromImage(_drawingImage))
+                using (var g = Graphics.FromImage(_drawingImage))
                 {
                     g.FillRectangle(Brushes.Black, 0, 0, _drawingImage.Width, _drawingImage.Height);
                     for (var n = 0; n < _angles.Length; n++)
                     {
-                        if (_angles[n] == 0)
-                            continue;
-
-                        g.DrawLine(Pens.ForestGreen, n, 256, n, 256 - _angles[n]);
+                        var y = 256.0f * _dataCount / _angles[n] * _scale;
+                        g.DrawLine(Pens.ForestGreen, n, 255, n, 256 - y);
                     }
                 }*/
 
+                if (_drawingImage == null)
+                {
+                    _drawingImage = new Bitmap(Width, Height);
+                    using (var g = Graphics.FromImage(_drawingImage))
+                    {
+                        g.FillRectangle(Brushes.Black, 0, 0, _drawingImage.Width, _drawingImage.Height);
+                    }
+                }
+
+                lock (_lockBitmap)
+                {
+                    if(_rawData.Count > 0)
+                    {
+                        using (var g = Graphics.FromImage(_drawingImage))
+                        {
+                            g.DrawImageUnscaled(_drawingImage, -_rawData.Count, 0);
+                            g.FillRectangle(Brushes.Black, _drawingImage.Width - _rawData.Count, 0, _drawingImage.Width, _drawingImage.Height);
+
+                            int index = 0;
+                            Complex? dataPoint = null;
+                            var x = prevPoint == null ? 0 : _drawingImage.Width - _rawData.Count;
+                            if (x < 0)
+                                x = 0;
+                            if (x > _drawingImage.Width - 1)
+                                x = _drawingImage.Width - 1;
+
+                            var y1Re = prevPoint == null ? 0 : (int)(_drawingImage.Height / 2.0f - prevPoint.Real * _scale + 0.5f);
+                            var y1Im = prevPoint == null ? 0 : (int)(_drawingImage.Height / 2.0f - prevPoint.Imag * _scale + 0.5f);
+                            if (y1Re < 0)
+                                y1Re = 0;
+                            if (y1Re > _drawingImage.Height)
+                                y1Re = _drawingImage.Height;
+                            if (y1Im < 0)
+                                y1Im = 0;
+                            if (y1Im > _drawingImage.Height)
+                                y1Im = _drawingImage.Height;
+
+                            while (_rawData.Count > 0)
+                            {
+                                dataPoint = _rawData.Dequeue();
+                                var y2Re = (int)(_drawingImage.Height / 2.0f - dataPoint.Value.Real * _scale + 0.5f);
+                                var y2Im = (int)(_drawingImage.Height / 2.0f - dataPoint.Value.Imag * _scale + 0.5f);
+                                if (y2Re < 0)
+                                    y2Re = 0;
+                                if (y2Re > _drawingImage.Height)
+                                    y2Re = _drawingImage.Height;
+                                if (y2Im < 0)
+                                    y2Im = 0;
+                                if (y2Im > _drawingImage.Height)
+                                    y2Im = _drawingImage.Height;
+
+                                g.DrawLine(Pens.Green, x + index, y1Re, x + index + 1, y2Re);
+                                g.DrawLine(Pens.Blue, x + index, y1Im, x + index + 1, y2Im);
+
+                                y1Re = y2Re;
+                                y1Im = y2Im;
+
+                                index++;
+                            }
+                            prevPoint = dataPoint.Value;
+                        }
+                    }
+                }
                 e.Graphics.DrawImageUnscaled(_drawingImage, 0, 0);
             }
         }

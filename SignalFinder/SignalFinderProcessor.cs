@@ -15,6 +15,10 @@ namespace SDRSharp.SignalFinder
         bool _enabled;
         ISharpControl _control;
         SignalFinderDisplay _display;
+        Complex[] _workingBuffer;
+        float[] _window;
+        float[] _spectrum;
+        float[] _avgData;
 
         public SignalFinderProcessor(ISharpControl control)
         {
@@ -45,16 +49,40 @@ namespace SDRSharp.SignalFinder
             }
         }
 
-        float[] buf = new float[1024];
         public unsafe void Process(Complex* buffer, int length)
         {
-            for (var n = 0; n < 1024; n++)
-                buf[n] = buffer[n].ModulusSquared();
+            if (_workingBuffer == null || _workingBuffer.Length < length)
+                _workingBuffer = new Complex[length];
 
-            fixed (float* pf = buf)
+            for (var n = 0; n < length; n++)
+                _workingBuffer[n] = buffer[n];
+
+            if (_window == null || _window.Length < length)
+                _window = FilterBuilder.MakeWindow(WindowType.Hamming, length);
+
+            fixed (Complex* workingPtr = _workingBuffer)
             {
-                //_s.Render(pf, 1024);
+                fixed (float* winPtr = _window)
+                    Fourier.ApplyFFTWindow(workingPtr, winPtr, length);
+
+                Fourier.ForwardTransform(workingPtr, length);
+
+                if (_avgData == null || _spectrum == null || _spectrum.Length < length)
+                {
+                    _spectrum = new float[length];
+                    _avgData = new float[length];
+                }
+
+                fixed (float* spectrumPtr = _spectrum)
+                    Fourier.SpectrumPower(workingPtr, spectrumPtr, length);
+
+                for (var n = 0; n < length; n++)
+                {
+                    _avgData[n] = _avgData[n] * 0.95f + _spectrum[n] * 0.05f;
+                }
             }
+
+            _display.AddDataLine(_avgData);
         }
     }
 }

@@ -82,13 +82,18 @@ namespace SDRSharp.PhaseInspector
                 _drawing.ScaleFactor = scale;
             };
 
+            _control.PropertyChanged += (sender, propArgs) => 
+            {
+                if (propArgs.PropertyName == "Frequency")
+                    _drawing.Clear();
+            };
             control.RegisterStreamHook(this, ProcessorType.RawIQ);
             control.RegisterFrontControl(_drawing, PluginPosition.Bottom);
         }
 
         public void Process(Complex* buffer, int length)
         {
-            if (_workingBuffer == null || _workingBuffer.Length < length)
+            /*if (_workingBuffer == null || _workingBuffer.Length < length)
                 _workingBuffer = new Complex[length];
 
             for (var n = 0; n < length; n++)
@@ -104,9 +109,9 @@ namespace SDRSharp.PhaseInspector
 
                 Fourier.ForwardTransform(workingPtr, length);
                 _drawing.AddDataLine(workingPtr, length);
-            }
+            }*/
 
-            //_drawing.AddDataLine(buffer, length);
+            _drawing.AddDataLine(buffer, length);
         }
     }
 }

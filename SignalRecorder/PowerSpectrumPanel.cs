@@ -62,8 +62,6 @@ namespace SDRSharp.SignalRecorder
         {
             base.OnPaint(e);
 
-            var count = _buffer.Count;
-
             if (_bufferImage == null)
                 return;
 
@@ -71,6 +69,7 @@ namespace SDRSharp.SignalRecorder
                 _drawingImage = new Bitmap(_bufferImage.Width, _bufferImage.Height);
 
             var scale = (_bufferImage.Height - 20.0f) / (_controlPanel.Range - _controlPanel.Offset); // dB per pixel
+            var count = _buffer.Count;
             if (count != 0)
             {
                 using (var g = Graphics.FromImage(_bufferImage))
@@ -80,20 +79,20 @@ namespace SDRSharp.SignalRecorder
                     g.FillRectangle(Brushes.Black, _bufferImage.Width - count, 0, count, _bufferImage.Height);
                     g.FillRectangle(Brushes.Black, 0, 0, 50, _bufferImage.Height);
 
+                    float p;
                     for (var n = count; n > 0; n--)
                     {
-                        if (((_timeCounter++)%PointsPerSecond) == 0)
+                        if (((_timeCounter++) % PointsPerSecond) == 0)
                         {
                             g.DrawLine(_timeCounter == 1 ? Pens.DodgerBlue : _gridPen, _bufferImage.Width - n, 20, _bufferImage.Width - n, _bufferImage.Height);
                             g.DrawString(((_timeCounter - 1)/PointsPerSecond).ToString(CultureInfo.InvariantCulture), _gridFont, Brushes.Silver, _bufferImage.Width - n - DefaultFont.Height, 0,
                                 new StringFormat(StringFormatFlags.DirectionVertical));
                         }
 
-                        float p;
                         lock(_buffer)
                             p = _buffer.Dequeue();
 
-                        var y = (int) ((-p - _controlPanel.Offset)*scale + 10.5);
+                        var y = (int) ((-p - _controlPanel.Offset) * scale + 10.5);
 
                         if (y < 10)
                             y = 10;
@@ -101,7 +100,7 @@ namespace SDRSharp.SignalRecorder
                         if (y >= Height)
                             y = Height - 1;
 
-                        g.DrawLine(Pens.White, _bufferImage.Width - n - 1, _lastY, _bufferImage.Width - n, y);
+                        g.DrawLine(Pens.Yellow, _bufferImage.Width - n - 1, _lastY, _bufferImage.Width - n, y);
 
                         _lastY = y;
                     }

@@ -50,6 +50,10 @@ namespace SDRSharp.SignalRecorder
             set { }
         }
 
+        public bool CanTune { get { return true; } }
+        public long MaximumTunableFrequency { get { return 2500000000; } }
+        public long MinimumTunableFrequency { get { return 0; } }
+
         // IIQStreamController
         public double Samplerate
         {
@@ -83,7 +87,7 @@ namespace SDRSharp.SignalRecorder
                         while (true)
                         {
                             var start = DateTime.Now;
-                            if (strm.Position > strm.Length - SignalRecorderPlugin.BytesPerSample *bufferSize)
+                            if (strm.Position > strm.Length - SignalRecorderPlugin.BytesPerSample * bufferSize)
                             {
                                 bufferSize = (int)(strm.Length - strm.Position) / SignalRecorderPlugin.BytesPerSample;
                                 rewind = true;
@@ -113,7 +117,7 @@ namespace SDRSharp.SignalRecorder
                                 callback(this, ptr, bufferSize);
 
                             var t = DateTime.Now - start;
-                            var s = TimeSpan.FromMilliseconds(bufferSize/_gui.SampleRate*1000);
+                            var s = TimeSpan.FromMilliseconds(bufferSize / _gui.SampleRate * 1000 - 5);
                             if (s > t)
                                 Thread.Sleep(s - t);
 
