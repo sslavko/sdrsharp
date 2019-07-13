@@ -32,6 +32,9 @@ namespace SDRSharp.SignalRecorder
         public delegate void PowerMonitorChangedEventHandler();
         public event PowerMonitorChangedEventHandler PowerMonitorChanged;
 
+        public delegate void ManualRecordingEventHandler(bool record);
+        public event ManualRecordingEventHandler ManualRecording;
+
         public string OutputFolder { get; private set; }
 
         public bool RecordingEnabled
@@ -109,8 +112,7 @@ namespace SDRSharp.SignalRecorder
         private void chkPowerMonitor_CheckedChanged(object sender, EventArgs e)
         {
             Utils.SaveSetting("SignalRecordingPowerMonitorEnabled", chkPowerMonitor.Checked);
-            if (PowerMonitorChanged != null)
-                PowerMonitorChanged();
+            PowerMonitorChanged?.Invoke();
         }
 
         private void chkEnableRecording_CheckedChanged(object sender, EventArgs e)
@@ -121,6 +123,16 @@ namespace SDRSharp.SignalRecorder
         private void outputFolder_TextChanged(object sender, EventArgs e)
         {
             OutputFolder = outputFolder.Text;
+        }
+
+        private void btnRecord_CheckedChanged(object sender, EventArgs e)
+        {
+            if (btnRecord.Checked)
+                btnRecord.Text = "Stop";
+            else
+                btnRecord.Text = "Record";
+
+            ManualRecording?.Invoke(btnRecord.Checked);
         }
     }
 }

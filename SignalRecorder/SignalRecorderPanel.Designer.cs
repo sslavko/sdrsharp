@@ -40,6 +40,7 @@
             this.trkOffset = new System.Windows.Forms.TrackBar();
             this.label4 = new System.Windows.Forms.Label();
             this.numSquelch = new System.Windows.Forms.NumericUpDown();
+            this.btnRecord = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.trkRange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trkOffset)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numSquelch)).BeginInit();
@@ -81,10 +82,10 @@
             this.statusText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.statusText.ForeColor = System.Drawing.Color.Red;
-            this.statusText.Location = new System.Drawing.Point(0, 97);
+            this.statusText.Location = new System.Drawing.Point(4, 97);
             this.statusText.Name = "statusText";
             this.statusText.ReadOnly = true;
-            this.statusText.Size = new System.Drawing.Size(312, 20);
+            this.statusText.Size = new System.Drawing.Size(308, 20);
             this.statusText.TabIndex = 3;
             // 
             // btnBrowse
@@ -186,10 +187,23 @@
             this.numSquelch.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numSquelch.ValueChanged += new System.EventHandler(this.numSquelch_ValueChanged);
             // 
+            // btnRecord
+            // 
+            this.btnRecord.Appearance = System.Windows.Forms.Appearance.Button;
+            this.btnRecord.Location = new System.Drawing.Point(6, 289);
+            this.btnRecord.Name = "btnRecord";
+            this.btnRecord.Size = new System.Drawing.Size(53, 24);
+            this.btnRecord.TabIndex = 10;
+            this.btnRecord.Text = "Record";
+            this.btnRecord.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.btnRecord.UseVisualStyleBackColor = true;
+            this.btnRecord.CheckedChanged += new System.EventHandler(this.btnRecord_CheckedChanged);
+            // 
             // SignalRecorderPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btnRecord);
             this.Controls.Add(this.numSquelch);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -226,5 +240,6 @@
         private System.Windows.Forms.TrackBar trkOffset;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown numSquelch;
+        private System.Windows.Forms.CheckBox btnRecord;
     }
 }

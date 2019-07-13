@@ -9,7 +9,7 @@ namespace SDRSharp.SignalFinder
     public partial class SignalFinderDisplay : UserControl
     {
         private Timer _timer;
-        private int _timerPeriod = 100;
+        private int _timerPeriod = 50;
         private Bitmap _drawingImage;
         private Bitmap _bufferImage;
         private Object _dataLock = new Object();
@@ -35,7 +35,6 @@ namespace SDRSharp.SignalFinder
 
             if (_dataBuffer.Count > 0)
             {
-                byte scale = 20;
                 lock (_dataLock)
                 {
                     var lines = _dataBuffer.Count;
@@ -63,21 +62,22 @@ namespace SDRSharp.SignalFinder
                             System.Runtime.InteropServices.Marshal.Copy(bmpData.Scan0, _colorBuffer, 0, bytes);
                             for (var i = 0; i < dataLine.Length; i++)
                             {
-                                var b = (int)(dataLine[i] * scale);
+                                var b = (int)(dataLine[i]);
                                 if (b < 0)
                                     b = 0;
                                 if (b > 0xff)
                                     b = 0xff;
 
-                                _colorBuffer[i * 4] = (byte)b;      // Blue
-                                _colorBuffer[i * 4 + 1] = (byte)b;  // Green
-                                _colorBuffer[i * 4 + 2] = (byte)b;  // Red
+                                _colorBuffer[i * 4] = (byte)(b * 0.5f);      // Blue
+                                _colorBuffer[i * 4 + 1] = (byte)(b * 0.8f);  // Green
+                                _colorBuffer[i * 4 + 2] = (byte)(b * 1f);  // Red
                                 _colorBuffer[i * 4 + 3] = 0xff;     // Alpha
                             }
                             System.Runtime.InteropServices.Marshal.Copy(_colorBuffer, 0, bmpData.Scan0, bytes);
                             _bufferImage.UnlockBits(bmpData);
                             var destRect = new Rectangle(0, n, _drawingImage.Width, 1);
                             g.DrawImage(_bufferImage, destRect, rect, GraphicsUnit.Pixel);
+                            //g.DrawImage(_bufferImage, 0, n);
                         }
                     }
                 }

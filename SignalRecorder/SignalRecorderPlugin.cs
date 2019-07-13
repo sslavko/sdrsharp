@@ -13,6 +13,7 @@ namespace SDRSharp.SignalRecorder
         private PowerSpectrumPanel _powerSpectrumPanel;
         private BinaryWriter _writer;
         private bool _recording;
+        private bool _manualRecording;
         private double _sampleRate;
         private int _fileCounter;
         private int _onhold;
@@ -54,6 +55,7 @@ namespace SDRSharp.SignalRecorder
 
             _controlPanel = new SignalRecorderPanel();
             _controlPanel.PowerMonitorChanged += OnPowerMonitorChanged;
+            _controlPanel.ManualRecording += OnManualRecording;
 
             _powerSpectrumPanel = new PowerSpectrumPanel(_controlPanel);
             OnPowerMonitorChanged();
@@ -78,6 +80,11 @@ namespace SDRSharp.SignalRecorder
                     _powerSpectrumPanel.Restart();
                 }
             }
+        }
+
+        private void OnManualRecording(bool record)
+        {
+            _manualRecording = record;
         }
 
         private void ControlOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
@@ -249,7 +256,7 @@ namespace SDRSharp.SignalRecorder
             else
                 _powerTriggerCount = 0;
 
-            SquelchOpen = _powerTriggerCount > 1;
+            SquelchOpen = _powerTriggerCount > 1 || _manualRecording;
 
             if(_powerSpectrumPanel.Visible)
                 _powerSpectrumPanel.Draw(dataPointValue);
@@ -275,7 +282,7 @@ namespace SDRSharp.SignalRecorder
 
             try
             {
-                if (SquelchOpen)
+                if (SquelchOpen || _manualRecording)
                 {
                     _onhold = 0;
 

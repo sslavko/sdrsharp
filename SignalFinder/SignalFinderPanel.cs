@@ -25,5 +25,20 @@ namespace SDRSharp.SignalFinder
         {
             _processor.Enabled = chkEnable.Checked;
         }
+
+        private void barScale_Scroll(object sender, EventArgs e)
+        {
+            _processor.Scale = barScale.Value;
+        }
+
+        private void barOffset_Scroll(object sender, EventArgs e)
+        {
+            _processor.Offset = barOffset.Value;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            _processor.UseWindow = checkBox1.Checked;
+        }
     }
 }
