@@ -43,6 +43,7 @@ namespace SDRSharp.SpectrumAnalyzer
             _gui.OnScanning += OnScanning;
 
             _drawing = new SpectrumAnalyzerDrawing();
+            _drawing.OnFreqChange += ChangeFrequency;
             _drawing.SetRanges(_gui.StartFreq, _gui.EndFreq, _gui.Step);
             if (_gui.ShowSpectrum == false)
                 _drawing.Hide();
@@ -64,6 +65,11 @@ namespace SDRSharp.SpectrumAnalyzer
             _control.RegisterStreamHook(this, ProcessorType.RawIQ);
 
             AutoScan();
+        }
+
+        private void ChangeFrequency(float frequency)
+        {
+            _control.SetFrequency((long)(frequency * 1000000), false);
         }
 
         void Export()

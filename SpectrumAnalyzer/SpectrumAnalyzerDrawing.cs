@@ -24,6 +24,11 @@ namespace SDRSharp.SpectrumAnalyzer
         private long _step;
         private Font _gridFont;
         private Pen _gridPen;
+        private Point _mousePos;
+        private float _freqHover;
+
+        public delegate void OnFreqChangeHandler(float frequency);
+        public event OnFreqChangeHandler OnFreqChange;
 
         public SpectrumAnalyzerDrawing()
         {
@@ -92,10 +97,13 @@ namespace SDRSharp.SpectrumAnalyzer
                     for (var n = 1; n < dataPoints.Length; n++)
                     {
                         var x = 20 + (int)((dataPoints[n].Key / 1000000f - _minFreq) / mhzPerPixel);
-                        int y = Height - (int)((dataPoints[n].Value - minVal) * scale) - 20;
-                        g.DrawLine(Pens.Cyan, lastX, lastY, x, y);  // Live data
-                        lastX = x;
-                        lastY = y;
+                        if (lastX != x)
+                        {
+                            int y = Height - (int)((dataPoints[n].Value - minVal) * scale) - 20;
+                            g.DrawLine(Pens.Cyan, lastX, lastY, x, y);  // Live data
+                            lastX = x;
+                            lastY = y;
+                        }
                     }
 
                     //var dbRange = maxVal - minVal;
@@ -106,6 +114,13 @@ namespace SDRSharp.SpectrumAnalyzer
 
                     g.DrawString(minValStr, _gridFont, Brushes.White, 20 - minSize.Width, Height - 20 - minSize.Height);
                     g.DrawString(maxValStr, _gridFont, Brushes.White, 20 - maxSize.Width, 0);
+
+                    if (_mousePos.X > 20)
+                    {
+                        g.DrawLine(Pens.Green, _mousePos.X, 0, _mousePos.X, Height - 20);
+                        _freqHover = _minFreq + (_mousePos.X - 20) * mhzPerPixel;
+                        g.DrawString(_freqHover.ToString(), _gridFont, Brushes.White, 25, 10);
+                    }
                 }
 
                 e.Graphics.DrawImageUnscaled(_drawingImage, 0, 0);
@@ -171,6 +186,29 @@ namespace SDRSharp.SpectrumAnalyzer
                     }
                 }
             }
+        }
+
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.X >= 20 && e.X <= Width - 20 && e.Y < Height - 20)
+            {
+                _mousePos.X = e.X;
+                _mousePos.Y = e.Y;
+            }
+            else
+            {
+                _mousePos.X = _mousePos.Y = -1;
+            }
+        }
+
+        private void OnMouseLeave(object sender, EventArgs e)
+        {
+            _mousePos.X = _mousePos.Y = -1;
+        }
+
+        private void OnMouseClick(object sender, MouseEventArgs e)
+        {
+            OnFreqChange(_freqHover);
         }
     }
 }

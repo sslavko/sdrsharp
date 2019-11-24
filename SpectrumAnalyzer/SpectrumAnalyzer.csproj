@@ -66,6 +66,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="SpectrumAnalyzerDrawing.resx">
+      <DependentUpon>SpectrumAnalyzerDrawing.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SpectrumAnalyzerPanel.resx">
       <DependentUpon>SpectrumAnalyzerPanel.cs</DependentUpon>
     </EmbeddedResource>
