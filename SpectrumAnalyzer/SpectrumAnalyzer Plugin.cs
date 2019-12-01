@@ -45,6 +45,7 @@ namespace SDRSharp.SpectrumAnalyzer
             _drawing = new SpectrumAnalyzerDrawing();
             _drawing.OnFreqChange += ChangeFrequency;
             _drawing.SetRanges(_gui.StartFreq, _gui.EndFreq, _gui.Step);
+            _drawing.Frequency = _control.Frequency;
             if (_gui.ShowSpectrum == false)
                 _drawing.Hide();
 
@@ -63,8 +64,17 @@ namespace SDRSharp.SpectrumAnalyzer
 
             _control.RegisterFrontControl(_drawing, PluginPosition.Bottom);
             _control.RegisterStreamHook(this, ProcessorType.RawIQ);
+            _control.PropertyChanged += OnPropertyChanged;
 
             AutoScan();
+        }
+
+        private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != "Frequency")
+                return;
+
+            _drawing.Frequency = _control.Frequency;
         }
 
         private void ChangeFrequency(float frequency)

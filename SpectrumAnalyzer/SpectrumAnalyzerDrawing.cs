@@ -92,7 +92,7 @@ namespace SDRSharp.SpectrumAnalyzer
                     if (float.IsNaN(scale) || float.IsInfinity(scale))
                         scale = 1.0f;
 
-                    long lastX = 20;
+                    long lastX = 19;
                     int lastY = dataPoints.Length > 0 ? Height - (int)((dataPoints[0].Value - minVal) * scale) - 20 : 0;
                     for (var n = 1; n < dataPoints.Length; n++)
                     {
@@ -103,6 +103,10 @@ namespace SDRSharp.SpectrumAnalyzer
                             g.DrawLine(Pens.Cyan, lastX, lastY, x, y);  // Live data
                             lastX = x;
                             lastY = y;
+                        }
+                        else
+                        {
+                            dataPoints[n] = new KeyValuePair<long, float>(dataPoints[n].Key, (dataPoints[n - 1].Value + dataPoints[n].Value) / 2.0f);
                         }
                     }
 
@@ -121,6 +125,9 @@ namespace SDRSharp.SpectrumAnalyzer
                         _freqHover = _minFreq + (_mousePos.X - 20) * mhzPerPixel;
                         g.DrawString(_freqHover.ToString(), _gridFont, Brushes.White, 25, 10);
                     }
+
+                    var fx = 20 + (Frequency / 1000000f - _minFreq) / mhzPerPixel;
+                    g.DrawLine(Pens.Red, fx, 0, fx, Height - 20);
                 }
 
                 e.Graphics.DrawImageUnscaled(_drawingImage, 0, 0);
@@ -156,6 +163,8 @@ namespace SDRSharp.SpectrumAnalyzer
 
             CreateBitmap();
         }
+
+        public long Frequency { get; set; }
 
         private void CreateBitmap()
         {
